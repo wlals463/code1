@@ -1,0 +1,20 @@
+# 소득(income)과 세금(tax) 변수 선언
+income = 55000000  # 연소득 (원 단위 예시)
+tax = 0
+
+# 소득 수준 분류 및 세금 계산
+if income >= 50000000:       # 5천만 원 이상
+    level = "고소득층"
+    tax = income * 0.50       # 50% 세율
+elif income >= 20000000:     # 2천만 원 이상 ~ 5천만 원 미만
+    level = "중간소득층"
+    tax = income * 0.25       # 25% 세율
+else:                         # 2천만 원 미만
+    level = "저소득층"
+    tax = income * 0.10       # 10% 세율
+
+# 결과 출력
+print("소득 수준:", level)
+print(f"연 소득: {income:,}원")
+print(f"적용 세율: {tax / income * 100:.0f}%")
+print(f"예상 세금: {tax:,.0f}원")
