@@ -1,0 +1,30 @@
+# 소득세 계산기 (2025년 기준)
+def calculate_income_tax(income):
+    # 세율표: (상한액, 세율, 누진공제)
+    tax_brackets = [
+        (12_000_000, 0.06, 0),
+        (46_000_000, 0.15, 1_080_000),
+        (88_000_000, 0.24, 5_220_000),
+        (150_000_000, 0.35, 14_900_000),
+        (300_000_000, 0.38, 19_400_000),
+        (500_000_000, 0.40, 25_400_000),
+        (1_000_000_000, 0.42, 35_400_000),
+        (float('inf'), 0.45, 65_400_000)
+    ]
+
+    # 해당 소득이 어느 구간에 속하는지 판별
+    for limit, rate, deduction in tax_brackets:
+        if income <= limit:
+            tax = income * rate - deduction
+            return rate, deduction, max(0, round(tax))
+
+# 실행 예시
+income = int(input("연소득을 입력하세요 (원): "))
+
+rate, deduction, tax = calculate_income_tax(income)
+
+print(f"\n[소득세 계산 결과]")
+print(f"연소득: {income:,} 원")
+print(f"적용 세율: {rate*100:.0f}%")
+print(f"누진공제액: {deduction:,} 원")
+print(f"산출세액: {tax:,} 원")
