@@ -1,0 +1,25 @@
+import streamlit as st
+
+st.title("💰 소득 수준 분류 및 세금 계산기")
+
+# 사용자 입력 받기
+income = st.number_input("연 소득을 입력하세요 (원)", min_value=0, step=1000000)
+
+# 계산 버튼
+if st.button("세금 계산하기"):
+    if income >= 50000000:
+        level = "고소득층"
+        tax_rate = 0.50
+    elif income >= 20000000:
+        level = "중간소득층"
+        tax_rate = 0.25
+    else:
+        level = "저소득층"
+        tax_rate = 0.10
+
+    tax = income * tax_rate
+
+    st.subheader(f"📊 소득 수준: {level}")
+    st.write(f"💵 연 소득: {income:,.0f}원")
+    st.write(f"📈 세율: {tax_rate * 100:.0f}%")
+    st.success(f"💰 예상 세금: {tax:,.0f}원")
