@@ -39,4 +39,17 @@ st.markdown("**국세청 근로장려금**을 간단하게 예측해보세요. (
 st.divider()
 
 # 입력 폼
-age = st.number_input("나이를 입력하세요", min_value=18, max_value=100,_
+age = st.number_input("나이를 입력하세요", min_value=18, max_value=100, value=40)
+household = st.radio("가구 유형을 선택하세요", ['단독', '홑벌이', '맞벌이'])
+
+if st.button("계산하기"):
+    try:
+        result = get_max_eitc(age, household)
+        st.success(f"👉 예상 최대 근로장려금: **{result:,}원**")
+        if age >= 65:
+            st.info("※ 65세 이상이므로 10% 추가 혜택이 반영되었습니다.")
+    except ValueError as e:
+        st.error(f"입력 오류: {e}")
+
+st.divider()
+st.caption("※ 본 계산기는 참고용이며, 실제 지급액은 소득·재산·가구 구성 등에 따라 달라집니다.")
