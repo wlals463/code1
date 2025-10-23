@@ -1,5 +1,5 @@
 # app.py
-# Streamlit 근로장려금 계산기 – 2024년 버전 (재산 + 기한후신고 반영)
+# Streamlit 근로장려금 계산기 – 2024년 버전 (재산 + 기한후신고 + 팝업 표시)
 # 실행: streamlit run app.py
 
 import streamlit as st
@@ -13,7 +13,6 @@ st.caption("비공식 참고용 계산기 • 국세청 홈택스 공식 결과�
 with st.expander("ℹ️ 계산 기준 안내", expanded=False):
     st.markdown("""
     - 2024년 귀속 근로장려금 기준으로 작성된 간이 계산기입니다.  
-    - 가구유형별 최대 지급액과 총소득 상한은 **국세청 공개자료**를 기반으로 합니다.  
     - **재산 1억 4천만 원 초과~2억 4천만 원 이하**: 지급액의 50% 감액  
       **2억 4천만 원 초과**: 지급 제외(재산기준 초과)  
     - **기한 후 신청 시** 지급액의 **90%**만 지급됩니다.
@@ -89,7 +88,20 @@ prop_adjusted, prop_note = apply_property_adjustment(base_amount, property_value
 final_amount, late_note = apply_late_filing_adjustment(prop_adjusted, late_filing)
 
 # ------------------------------
-# 5️⃣ 결과 출력
+# 5️⃣ 팝업(알림) 표시 로직
+# ------------------------------
+if final_amount == 0:
+    if prop_note == "재산기준 초과(미지급)":
+        st.error("🚫 지급기준 초과 — 재산기준을 초과하여 근로장려금이 지급되지 않습니다.")
+    else:
+        st.warning("⚠️ 소득 또는 조건이 기준에 미달하여 지급되지 않습니다.")
+elif "감액" in prop_note or late_note:
+    st.warning("💡 감액지급 — 일부 조건(재산 또는 기한후신고)에 의해 감액됩니다.")
+else:
+    st.success("✅ 정상지급 — 모든 조건 충족으로 정상 지급됩니다.")
+
+# ------------------------------
+# 6️⃣ 결과 표시
 # ------------------------------
 st.subheader("📊 계산 결과")
 st.metric(label="예상 근로장려금 지급액", value=f"{final_amount:,.0f} 원")
