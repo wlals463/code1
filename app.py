@@ -1,57 +1,44 @@
 import streamlit as st
+from openai import OpenAI
 
-st.set_page_config(page_title="고용증대 세액공제 계산기", page_icon="💼", layout="centered")
+# 페이지 기본 설정
+st.set_page_config(page_title="ChatGPT Streamlit Bot", page_icon="💬")
 
-st.title("💼 고용증대 세액공제 계산기")
-st.write("조세특례제한법 제29조의7에 따른 고용증대 세액공제를 간편하게 계산합니다.")
+# 제목
+st.title("💬 Streamlit Chatbot powered by OpenAI")
 
-# 입력값 받기
-st.header("📋 기본 정보 입력")
+# API Key 입력 또는 설정
+openai_api_key = st.text_input("🔑 Enter your OpenAI API Key", type="password")
 
-prev_employees = st.number_input("직전연도 상시근로자 수", min_value=0, value=50)
-curr_employees = st.number_input("당해연도 상시근로자 수", min_value=0, value=60)
-prev_young = st.number_input("직전연도 청년 상시근로자 수", min_value=0, value=10)
-curr_young = st.number_input("당해연도 청년 상시근로자 수", min_value=0, value=15)
+if not openai_api_key:
+    st.warning("Please enter your API key to start chatting.")
+    st.stop()
 
-company_size = st.selectbox("기업 규모", ["중소기업", "중견기업", "대기업"])
-location = st.selectbox("소재지", ["수도권", "지방"])
+# 클라이언트 생성
+client = OpenAI(api_key=openai_api_key)
 
-st.markdown("---")
+# 세션 상태 초기화
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant."}]
 
-# 계산 로직
-def employment_increase_credit(
-    prev_employees,
-    curr_employees,
-    prev_young,
-    curr_young,
-    company_size,
-    location
-):
-    total_increase = curr_employees - prev_employees
-    young_increase = curr_young - prev_young
-    general_increase = total_increase - young_increase
+# 대화 출력
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        st.chat_message("user").markdown(msg["content"])
+    else:
+        st.chat_message("assistant").markdown(msg["content"])
 
-    # 예시 단가 (단위: 만원)
-    rates = {
-        "중소기업": {"수도권": (700, 1200), "지방": (770, 1300)},
-        "중견기업": {"수도권": (500, 900), "지방": (550, 1000)},
-        "대기업": {"수도권": (400, 750), "지방": (450, 800)},
-    }
+# 사용자 입력
+if prompt := st.chat_input("Type your message here..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").markdown(prompt)
 
-    general_rate, young_rate = rates[company_size][location]
-
-    credit = (general_increase * general_rate) + (young_increase * young_rate)
-    return total_increase, young_increase, general_increase, credit
-
-if st.button("🔍 세액공제 계산하기"):
-    total_inc, young_inc, general_inc, credit = employment_increase_credit(
-        prev_employees, curr_employees, prev_young, curr_young, company_size, location
-    )
-
-    st.success("✅ 계산 결과")
-    st.write(f"- 총 상시근로자 증가 인원: **{total_inc}명**")
-    st.write(f"- 청년 상시근로자 증가 인원: **{young_inc}명**")
-    st.write(f"- 일반 상시근로자 증가 인원: **{general_inc}명**")
-    st.write(f"💰 예상 세액공제액: **{credit:,.0f}만원**")
-
-    st.caption("※ 실제 금액은 조세특례제한법 시행령 기준에 따라 변동될 수 있습니다.")
+    # OpenAI API 호출
+    with st.chat_message("assistant"):
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=st.session_state.messages
+        )
+        reply = response.choices[0].message.content
+        st.markdown(reply)
+    st.session_state.messages.append({"role": "assistant", "content": reply})
